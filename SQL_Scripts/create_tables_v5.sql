@@ -34,6 +34,21 @@ update patent_20170808.temp_patent_level_gi set num_inventors = 0 where num_inve
 update patent_20170808.temp_patent_level_gi set num_assignees = 0 where num_assignees is null;
 update patent_20170808.temp_patent_level_gi set weighted_cites_5yrs = 0 where weighted_cites_5yrs is null;
 update patent_20170808.temp_patent_level_gi set num_citations_in_5yrs= 0 where num_citations_in_5yrs is null;
+create index patent_ix on patent_20170808.temp_patent_level_gi (patent_id);
+
+
+-- create table with assignee type data
+create table patent_20170808.temp_gi_assignee_type as 
+select g.patent_id, a.`type` as assignee_type, a.organization from 
+patent_20170808.temp_patent_level_gi g 
+left join patent_20170808.patent_assignee pa on g.patent_id = pa.patent_id
+left join patent_20171003.assignee a on pa.assignee_id = a.id; #use more recent assignee because the types are correct
+
+
+
+select * from patent_20170808.temp_gi_assignee_type;
+
+
 
 
 -- patent-level data for just non-GI patents
