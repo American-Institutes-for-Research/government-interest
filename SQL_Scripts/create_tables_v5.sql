@@ -46,7 +46,7 @@ left join patent_20171003.assignee a on pa.assignee_id = a.id; #use more recent 
 
 
 
-select * from patent_20170808.temp_gi_assignee_type;
+select assignee_type, count(patent_id) as count from patent_20170808.temp_gi_assignee_type group by assignee_type order by count;
 
 
 
