@@ -81,6 +81,14 @@ in.connection_level <- read.csv("GI_connection_to_private_industry.csv", header 
 head(in.connection_level)
 connection_counts <- in.connection_level %>% group_by(degrees) %>% summarise(Number_of_Patents = length(degrees))
 connection_counts
-graph3 <- (ggplot(connection_counts, aes(degrees, Number_of_Patents)) +
-                 +geom_bar(stat = "identity", fill = 'blue') + ggtitle("Degrees Separating GOvernment Interest Patents From Private Sector Patents"))
+graph3 <- (ggplot(connection_counts, aes(degrees, Number_of_Patents)) 
+                 +geom_bar(stat = "identity", fill = 'blue') + ggtitle("Degrees Separating Government Interest Patents From Private Sector Patents"))
 graph3
+
+ggsave (paste0("out\\degrees_of_separation.png"), device = "png")
+
+#government to firm connections
+
+distance <- read.csv("assignee_distance_by_type.csv", header = TRUE, stringsAsFactors = FALSE)
+head(distance)
+
