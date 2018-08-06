@@ -1,0 +1,60 @@
+Step 1:
+	Every time when a new database is pushed online, 
+	
+	For SQL users:
+		a. Go to the folder '1_SQL_Data_Prep'. 
+		b. Throughout the script, replace 'patent_20180528' with the most recent raw database and 'PatentsView_20180528' with the latest reporting database EXCEPT 
+		   for the 'temp_inventor_gender' table, which will not be present in new databases as the gender code is not yet implemented. 
+		c. Then run through all of the SQL scripts (in numerical order) to generate tables that will be used to generate these visualizations. 
+		   ** Note: Notice that some of the queries arequite slow due to table size.
+
+	For R users:
+		a. To gather data, you will be able to download the most updated data from http://www.patentsview.org/download/ and save it to folder 'data_to_read'. 
+		   These data include:
+			1. uspatentcitation
+			2. patent
+			3. patent_govintorg
+			4. patent_inventor
+			5. patent_assignee
+			6. nber
+			7. wipo
+			8. wipo_field
+			9. temp_5yr_citations
+			10. government_organization
+			11. assignee
+			12. government_interest
+			13. rawassignee
+			14. temp_gi_assignee_type
+			15. temp_inventor_gender
+			16. temp_gi_has_female_inv
+			17. temp_gi_inventor_gender
+
+		b. Go to the folder '1_R_Data_Prep'. 
+		c. Make sure you change the path which you store your data you downloaded in step (a). Then run through all of the R scripts in numerical order to generate tables 
+		d. Save all the tables generated in this step in folder 'data_to_read', these include
+			1. temp_patent_level_gi.csv
+			2. temp_gi_level_gi.csv
+			3. temp_patent_level_all
+			4. all_assignees
+			5. temp_5yr_citations_by_cite_yr1
+			6. temp_5yr_citations_by_cite_yr2
+			7. temp_5yr_citations_by_cite_yr3
+			8. temp_5yr_citations_by_cite_yr4
+			9. temp_5yr_citations_by_cite_yr5
+			10. assignee_type
+Step 2:
+	Put the lookup files that are provided in folder 'data_to_read'. These files include:
+		a. assignees_lookedup_types.csv [from python script]
+		b. government_interest_patents_1980-2018_returned.csv [from USPTO]
+		c. Agencies.csv [from Archive]
+
+Step 3:
+	** NOTE: In this step, if you generated tables useing R in Step 1, then make sure you change the way you read in table from local file in the following three R scripts.
+
+	Go to folder '3_Data_Viz_Generate' to generate data viz
+	
+	Run through 1.govIntBrief_v3.R to generate data visualizations and tables for analysis. This script will generate two folders:
+		(1) Folder 'data_viz': a folder to store all of the viz that will be generated from R script
+		(2) Folder 'out': a folder to store all of the tables that will be generated from R script
+	
+	Then, run 2.govIntBrief_v3_assignee and 3.govIntBrief_v3_gender
