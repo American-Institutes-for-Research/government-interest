@@ -3,7 +3,7 @@ library(dplyr)
 library(scales)
 
 
-setwd("F:\\Govt_Int\\2018_Update\\2018_Update_gov_int") 
+
 script_v <- "3.0"
 
 # set color scheme
@@ -17,7 +17,7 @@ lightGrey <- rgb (152, 152, 152, maxColorValue=255)
 #########################################################################################################
 
 # connect to the aws mySQL server
-source("G:\\ConfigFiles\\configr.r")
+source("./config.r")
 my_db=src_mysql(dbname=dbname,host=host,port=port,user=user,password=password)
 #########################################################################################################
 # load patent data
@@ -27,9 +27,9 @@ in.patent_level$year <- as.numeric(as.character(in.patent_level$year))
 in.patent_level$patent_id <- as.character(in.patent_level$patent_id)
 
 # load assignee level data
-in.assignee_level <- read.csv("data_to_read\\assignee_type.csv", header = TRUE, stringsAsFactors = FALSE)
+in.assignee_level <- read.csv("./data_to_read/assignee_type.csv", header = TRUE, stringsAsFactors = FALSE)
 in.assignee_level <- in.assignee_level %>% select(patent_id, assignee_type, organization)
-in.assignee_level_types <- read.csv("data_to_read\\assignees_lookedup_types.csv", header = TRUE, stringsAsFactors = FALSE)
+in.assignee_level_types <- read.csv("data_to_read/assignees_lookedup_types.csv", header = TRUE, stringsAsFactors = FALSE)
 in.assignee_level_types <- in.assignee_level_types %>% select(patent_id, assignee_type, organization, thes_types)
 
 
