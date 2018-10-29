@@ -515,8 +515,8 @@ sector_merge <- cit.merge_5 %>% left_join(sector_org.merged.ratio.clnd, by="pate
 sector_merge$First <- sector_merge$num_citation_yr1 * sector_merge$weight
 sector_merge$Second <- sector_merge$num_citation_yr2 * sector_merge$weight
 sector_merge$Third <- sector_merge$num_citation_yr3 * sector_merge$weight
-sector_merge$Fourth <- sector_merge$num_citation * sector_merge$weight
-sector_merge$Fifth <- sector_merge$num_citation_yr4 * sector_merge$weight
+sector_merge$Fourth <- sector_merge$num_citation_yr4 * sector_merge$weight
+sector_merge$Fifth <- sector_merge$num_citation * sector_merge$weight
 sector_merge.sub <- sector_merge[,c(23:30)]
 
 sector_merge.sub[is.na(sector_merge.sub)] <- 0
