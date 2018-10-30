@@ -15,37 +15,43 @@ install_pkgs <- function(pkg) {
 } # end install_pkgs()
 
 
-# Create figure 2 in gov interest data brief
-# Figure 2 Code
 
-figure2 <- function(){
+
+# Gov Int Patents, Top 6 Technology Fields
+# Government interest patents granted 1980-2017, top six technology fields
+# Figure 2 in gov interest data brief
+gi_patents_in_top6_techFields <- function(in.patent_level){
   
-  # 5. patent classifications -- WIPO fields (below sectors)
+  # Patent classifications -- WIPO fields (below sectors)
   freq.wipo_field <- as.data.frame(table(in.patent_level$wipo_field))
   freq.wipo_field <- freq.wipo_field %>% 
     select(wipo_field = Var1, freq = Freq)
   
+  # Cleaning step for NULL data
   freq.wipo_field.nn <- freq.wipo_field %>% 
     filter(wipo_field != "NULL") %>%
     arrange(desc(freq))
   
-  top5 <- as.character(freq.wipo_field.nn[1:6,1])
+  # Extract top 6 fields
+  top6 <- as.character(freq.wipo_field.nn[1:6,1])
   
+   
   sum.weights <- sum(freq.wipo_field.nn$freq)
   freq.wipo_field.nn <- freq.wipo_field.nn %>%
     mutate(percentage = freq/sum.weights)
   
-  # longitudinal (gi_patents)
-  long.5a <- as.data.frame(table(in.patent_level$wipo_field, in.patent_level$year))
+  # Get longitudinal by adding year column (gi_patents)
+  long.6a <- as.data.frame(table(in.patent_level$wipo_field, in.patent_level$year))
   
-  keep.5a <- long.5a %>% 
+  keep.6a <- long.6a %>% 
     select(wipo_field = Var1, year = Var2, freq = Freq) %>% 
     filter(wipo_field %in% top5)
-  long.5a <- long.5a %>% select(wipo_field = Var1, year = Var2, freq = Freq)
-  #change the year from discrete value to continuous value so that it could be plot by ggplot2
-  keep.5a$year <- as.numeric(levels(keep.5a$year))[keep.5a$year]
+  long.6a <- long.6a %>% select(wipo_field = Var1, year = Var2, freq = Freq)
+ 
+   # Change year var from discrete values to continuous values - allow plotting
+  keep.6a$year <- as.numeric(levels(keep.6a$year))[keep.6a$year]
   
-  g.5l <- ggplot(keep.5a, aes(x = year, y = freq, colour=wipo_field, group = wipo_field, linetype=wipo_field)) + 
+  top6_plot <- ggplot(keep.6a, aes(x = year, y = freq, colour=wipo_field, group = wipo_field, linetype=wipo_field)) + 
     geom_line(size=1.5) + 
     ylab(label="Number of Patents") +  xlab("Year") +
     scale_colour_manual(values=c(cyan, darkGrey, darkGreen, darkRed, darkPurple, lightGrey)) +
@@ -61,19 +67,31 @@ figure2 <- function(){
           legend.title=element_blank(),
           text=element_text(size=16,  family="Cambria")
     )
-  g.5l
-  ggsave (filename = paste0("data_viz\\longWipoFields_v", script_v, ".png"), plot = g.5l, device = "png")
-  write.csv (long.5a, file = "out\\gi.wipo_fields.keep6.csv")
-  
+  top6_plot
+   
+  write.csv (long.5a, file = "out\\gi.wipo_fields.keep6.csv") 
   
 }
 
-# Create figure 3 in gov interest data brief
-# Figure 3 Code
 
-figure3 <- function(){
-  # get wipo_field frequencies across all patents
+# Share of total patents with a government interest 2005-2017, top six technology fields 
+# Figure 3 in gov interest data brief
+share_of_gi_patents_from_total <- function(in.all, in.patent_level){
   
+  # Patent classifications -- WIPO fields (below sectors)
+  freq.wipo_field <- as.data.frame(table(in.patent_level$wipo_field))
+  freq.wipo_field <- freq.wipo_field %>% 
+    select(wipo_field = Var1, freq = Freq)
+  
+  # Cleaning step for NULL data
+  freq.wipo_field.nn <- freq.wipo_field %>% 
+    filter(wipo_field != "NULL") %>%
+    arrange(desc(freq))
+  
+  # Extract top 6 fields
+  top6 <- as.character(freq.wipo_field.nn[1:6,1])
+  
+  # get wipo_field frequencies across all patents
   in.all.since_1980 <- in.all %>% filter(year > 1980 & year <= 2017)
   in.all.since_2005 <- in.all %>% filter(year >= 2005 & year <= 2017)
   
@@ -87,23 +105,23 @@ figure3 <- function(){
   freq.wipo_field.merge <- freq.wipo_field.merge %>% mutate(ratio = freq.x/freq.y)
   
   
-  long.5b <- as.data.frame(table(in.all.since_2005$wipo_field, in.all.since_2005$year))
-  long.5b <- long.5b %>% select(wipo_field = Var1, year = Var2, freq = Freq)
-  merged.long5 <- long.5a %>% 
-    inner_join(long.5b, by=c("wipo_field","year"), suffixes=c("_5a", "_5b")) %>% 
+  long.6b <- as.data.frame(table(in.all.since_2005$wipo_field, in.all.since_2005$year))
+  long.6b <- long.6b %>% select(wipo_field = Var1, year = Var2, freq = Freq)
+  merged.long5 <- long.6a %>% 
+    inner_join(long.6b, by=c("wipo_field","year"), suffixes=c("_5a", "_5b")) %>% 
     mutate(ratio = freq.x/freq.y)
   
   # keep only the top 5 wipo_fields
-  keep.5b <- long.5b %>% filter(wipo_field %in% top5)
-  keep.5b$year<-as.numeric(levels(keep.5b$year))[keep.5b$year]
-  merged.keep5 <- keep.5a %>% 
-    inner_join(keep.5b , by=c("wipo_field","year"), suffixes=c("_5a", "_5b")) %>% 
+  keep.6b <- long.6b %>% filter(wipo_field %in% top6)
+  keep.6b$year<-as.numeric(levels(keep.6b$year))[keep.6b$year]
+  merged.keep6 <- keep.6a %>% 
+    inner_join(keep.6b , by=c("wipo_field","year"), suffixes=c("_6a", "_6b")) %>% 
     mutate(ratio = freq.x/freq.y)
   
   #change the year from discrete value to continuous value so that it could be plot by ggplot2
-  merged.keep5$year <- as.numeric(merged.keep5$year)
+  merged.keep6$year <- as.numeric(merged.keep6$year)
   
-  g.5lp <- ggplot(merged.keep5) + 
+  share_gi_total_plot <- ggplot(merged.keep6) + 
     geom_line(aes(x = year, y = ratio, colour=wipo_field, group = wipo_field, linetype = wipo_field), size=1.5) + 
     ylab(label="Percent of Government Interest Patents to All Patents") +  xlab("Year") + 
     scale_colour_manual(values=c(cyan, darkGrey, darkGreen, darkRed, darkPurple, lightGrey)) +
@@ -120,26 +138,22 @@ figure3 <- function(){
           legend.title=element_blank(),
           text=element_text(size=16,  family="Cambria")
     ) 
-  g.5lp
-  ggsave (filename = paste0("data_viz\\longWipoFieldsPercent_v", script_v, ".png"), plot = g.5lp, device = "png")
+  share_gi_total_plot
   write.csv (merged.keep5, file = "out\\merged_wipo_fields.keep6.csv")
-  
-  
-  
-  
+
 }
 
-# Create figure 1 in gov interest data brief
-# Figure 1 Code
-figure1 <- function(){
+# Growth in Government Interest, all Patents, and real Federal R&D Funding
+# Figure 1 in gov interest data brief
+growth_gi_allPatents_rdFund <- function(in.fund, in.all){
   
-  # 9. graph R&D expenditures over time (line) 
+  # graph R&D expenditures over time (line) 
   in.fund$FederalIndex <- in.fund$Total.R.D / in.fund[in.fund$Fiscal.Year==1980, which(colnames(in.fund)=="Total.R.D")] * 100
-  g.9 <- ggplot(data=in.fund, aes(x=Fiscal.Year, y=Total.R.D, group=1)) + geom_line(size=1.5, color="#0066CC") + 
+  rd_expenditures_plot <- ggplot(data=in.fund, aes(x=Fiscal.Year, y=Total.R.D, group=1)) + geom_line(size=1.5, color="#0066CC") + 
     xlab ("Year") + ylab("Federal Expenditures (in billions of dollars)") + scale_y_continuous(labels = scales::dollar)
-  g.9
+  rd_expenditures_plot
   
-  # 10. let's look at the increase in all patents over the years
+  # look at the increase in all patents over the years
   freq.all.by_year <- as.data.frame(table(in.all$year))
   freq.all.by_year <- freq.all.by_year %>% 
     rename(year = Var1, freq = Freq)
@@ -150,13 +164,13 @@ figure1 <- function(){
   freq.all.by_year <- freq.all.by_year %>%  
     filter(year <= 2017 & year >= 1980)
   
-  
-  g.10 <- ggplot(data=freq.all.by_year, aes(x=year, y=freq,group=1)) + 
+  # graph count of patents over time
+  all_patents_plot <- ggplot(data=freq.all.by_year, aes(x=year, y=freq,group=1)) + 
     geom_line(size=1.5, color="#EC7C27") + xlab ("Number of patents") + ylab("Count") + 
     scale_y_continuous(labels = comma)
-  g.10
+  all_patents_plot
   
-  # 11a. increase in GI patents over the years
+  # increase in GI patents over the years
   freq.gi.by_year <- as.data.frame(table(in.patent_level$year))
   freq.gi.by_year <- freq.gi.by_year %>% 
     rename(year = Var1, freq = Freq)
@@ -167,17 +181,17 @@ figure1 <- function(){
   freq.gi.by_year.clnd$freqIndex <- freq.gi.by_year.clnd$freq / freq.gi.by_year.clnd[freq.gi.by_year.clnd$year=="1980", which(colnames(freq.gi.by_year.clnd)=="freq")] * 100
   
   unique(freq.gi.by_year.clnd$year)
-  g.11a <- ggplot(data=freq.gi.by_year.clnd, aes(x=year, y=freq,group=1)) + 
+  gi_patents_plot <- ggplot(data=freq.gi.by_year.clnd, aes(x=year, y=freq,group=1)) + 
     geom_line(size=1.5, color="#EC272a") + xlab ("Number of patents") + ylab("Count") + 
     scale_y_continuous(labels = comma)
-  g.11a
+  gi_patents_plot
   
-  # 12. create index graphs across R&D expenditures, all patents, and gi patents
+  # create index graphs across R&D expenditures, all patents, and gi patents
   merged.ind1 <- freq.gi.by_year.clnd %>% inner_join(freq.all.by_year , by="year", suffixes=c("_gi", "_all"))
   merged.ind2 <- merged.ind1 %>% inner_join(in.fund, by=c("year"= "Fiscal.Year"))
   melt.ind <- melt(merged.ind2, id="year", measure.vars = c(3,5,21))
   
-  g.12 <- ggplot(melt.ind) + 
+  index_plot <- ggplot(melt.ind) + 
     geom_line(aes(x = year, y = value, colour=variable, linetype=variable), size=1.5) + 
     ylab(label="Indexed Value") +  xlab("Year") +
     scale_colour_manual(values=c(cyan, darkGrey, darkGreen), labels=c( "Government interest patents", "All patents", "Federal R&D funding")) +
@@ -191,9 +205,8 @@ figure1 <- function(){
           legend.title=element_blank(),
           text=element_text(size=16,  family="Cambria")
     ) 
-  g.12
+  index_plot
   
-  ggsave (filename = paste0("data_viz\\indexed_", script_v, ".png"), plot = g.12, device = "png")
   write.csv (freq.all.by_year, file="out\\sector_org_field.by_year.count")
   write.csv (freq.all.by_year, file="out\\freq.all.by_year.csv")
   write.csv (freq.gi.by_year, file="out\\freq.gi.by_year.csv")
@@ -201,9 +214,10 @@ figure1 <- function(){
 }
 
 
-# Create figure 7 in gov interest data brief
-# Figure 7 Code
-figure7 <- function(){
+# Mean Number of Inventors in Gov Interest Patents and Across All Patents
+# Figure 7 in gov interest data brief
+mean_num_inv_gi_patents <- function(in.patent_level, in.all){
+  
   # 13. inventors by year
   patent_level.bkp <- in.patent_level
   colnames(patent_level.bkp)
@@ -218,7 +232,7 @@ figure7 <- function(){
   merged.agg <- gi.agg %>% inner_join(all.agg, by="Year", suffixes=c("_gi", "_all"))
   melt.agg <- melt(merged.agg, id="Year", measure.vars = c(2,4)) # was c(2:5)
   
-  g.13 <- ggplot(melt.agg) + 
+  mean_num_inv_plot <- ggplot(melt.agg) + 
     geom_line(aes(x = Year, y = value, colour=variable, linetype=variable), size=1.5) + 
     scale_x_continuous(breaks=c(1980, 1985, 1990,1995,2000,2005,2010,2015)) +
     ylab(label="Mean Number of Inventors") +  xlab("Year") +
@@ -231,16 +245,14 @@ figure7 <- function(){
           legend.title=element_blank(),
           text=element_text(size=16,  family="Cambria")
     )
-  g.13
-  
-  ggsave (filename = paste0("data_viz\\longInventor_v", script_v, ".png"), plot = g.13, device = "png")
+  mean_num_inv_plot
   
 }
 
 
-# Create figure A (sankey viz) in gov interest data brief
-
-figureA_sankey <- function(){
+# Top Gov Interest to assignee Patenting Flows
+# Figure A in gov interest data brief
+top_gi_patent_flow <- function(in.assignees, in.patent_level.merged){
   
   # process assignees table
   in.assignees <- in.assignees.all %>% 
@@ -260,8 +272,7 @@ figureA_sankey <- function(){
   assignees.merged$entity <- toTitleCase(tolower(assignees.merged$entity))
   
   
-  
-  # 17. sankey viz for funders --> assignees to do the network viz
+  # sankey viz for funders --> assignees to do the network viz
   
   assignees.merged.sub <- assignees.merged[,c(1, 3, 20)] # patent_id, entity, level_one
   ass_org.merged.ratio <- assignees.merged.sub %>%  
@@ -275,27 +286,29 @@ figureA_sankey <- function(){
     arrange(desc(freq))
   
   top.rows <- 30
+  
   count.ass_org.srtd <- count.ass_org.srtd[1:top.rows,]
   count.ass_org.srtd <- count.ass_org.srtd[!grepl("The United States of America as Represented by the United States Department of Energy", count.ass_org.srtd$entity), ]
   count.ass_org.srtd <- count.ass_org.srtd[!grepl("The United States of America as Represented by the Administrator of the National Aeronautics and Space Administration", count.ass_org.srtd$entity), ]
   count.ass_org.srtd <- count.ass_org.srtd[!grepl("The United States of America as Represented by the Secretary of the Navy", count.ass_org.srtd$entity), ]
   
-  # create nodes 
+  # create nodes
   top.rows <- nrow(count.ass_org.srtd)
   top.funders <- unique(count.ass_org.srtd[1:top.rows,2])
   top.assignees <- unique(count.ass_org.srtd[1:top.rows,1])
   nodes = unlist(c(top.funders, top.assignees))
   
-  # create source
+  # create source 
   source <- list(count.ass_org.srtd$level_one)
   source_lst <- lapply(source, function(x) match(x,nodes))
   count.ass_org.srtd$source <- unlist(source_lst)
-  # create target
+ 
+   # create target 
   target <- list(count.ass_org.srtd$entity)
   target_lst <- lapply(target, function(x) match(x,nodes))
   count.ass_org.srtd$target <- unlist(target_lst)
   
-  # impute funder node ids onto original counts
+  # impute funder node ids onto original counts 
   funders.links <- sapply(1:length(count.ass_org.srtd), function(x) grep(nodes[x], count.ass_org.srtd[,2], ignore.case = TRUE))
   fl.df <- data.frame(ID = rep(seq(funders.links), sapply(funders.links, length)), Obs = unlist(funders.links))
   fl.df[, 1] <- fl.df[,1] - 1
@@ -309,7 +322,7 @@ figureA_sankey <- function(){
   
   View(count.ass_org.srtd)
   
-  p.sk <- plot_ly(
+  patent_flow_plot <- plot_ly(
     type = "sankey",
     orientation = "h",
     
@@ -341,16 +354,14 @@ figureA_sankey <- function(){
       yaxis = list(showgrid = F, zeroline = F, showticklabels = F)
     )
   
-  p.sk
+  patent_flow_plot
   
-  orca(p.sk, file = paste0("data_viz\\Sankey_", script_v, ".png"))
-  htmlwidgets::saveWidget(p.sk, file = paste0("F:\\Govt_Int\\Final_CSVS\\out\\assignees\\Sankey org name_", script_v, "_", ".html"))
-  
+    
 }
 
-# Create figure 4 in gov interest data brief
-# Figure 4 Code
-figure4 <- function(){
+# Gov Interest Patents with Top High Level Federal Funding Agencies & Assignee Sectors
+# Figure 4 in gov interest data brief
+gi_patents_funding_agencies <- function(){
   
   # get a table of unique level_one org with weighted count
   freq.level_one.srtd <- level_one.clnd %>% 
@@ -369,7 +380,7 @@ figure4 <- function(){
     filter(thes_types != "Other")
   count.sector_org.short$level_one <- gsub ("([^ ]+) ", "\\1\n", count.sector_org.short$level_one)
   
-  g.18b <- ggplot(aes(y = count, x = reorder(level_one, -count), fill = thes_types), data = count.sector_org.short) + 
+  funding_agencies_plot <- ggplot(aes(y = count, x = reorder(level_one, -count), fill = thes_types), data = count.sector_org.short) + 
     geom_bar( stat="identity", position = "dodge") +
     ylab(label="Number of Patents") +  xlab("US Federal Department or Agency") +
     scale_y_continuous(label=comma) + 
@@ -379,17 +390,14 @@ figure4 <- function(){
           text=element_text(size=16,  family="Cambria"),
           legend.title=element_blank()
     )
-  g.18b
-  
-  ggsave (filename = paste0("data_viz\\funders-assignees.dodged_", script_v, ".png"), plot = g.18b, device = "png")
-  
+  funding_agencies_plot
+    
 }
 
-# Create firm size viz
+# Create firm size
 firmsize <- function(){
-  firmsize_viz() 
-  # 19n. Assignees by firm size
-  
+ 
+  # Assignees by firm size
   patent_size.merged.clnd <- sector_org.merged.ratio.clnd %>%
     inner_join(in.size, by="patent_id") %>% 
     inner_join(in.patent_level, by="patent_id") %>%
@@ -415,7 +423,7 @@ firmsize <- function(){
   
   patent_size.cnt <- patent_size.cnt[patent_size.cnt$year >= 1990,]
   
-  g.19n <- ggplot(patent_size.cnt, aes(x = year, y = freq, colour=size_issue, group = size_issue, linetype=size_issue)) + 
+  firm_size_plot <- ggplot(patent_size.cnt, aes(x = year, y = freq, colour=size_issue, group = size_issue, linetype=size_issue)) + 
     geom_line(size=1.5) + 
     ylab(label="Weighted Number of Patents") +  xlab("Year") + 
     scale_x_continuous(breaks=c(1990,1995,2000,2005,2010,2015)) +
@@ -430,17 +438,16 @@ firmsize <- function(){
           legend.title=element_blank(),
           text=element_text(size=16,  family="Cambria")
     ) 
-  g.19n
-  
-  ggsave (filename = paste0("data_viz\\firmSize_", script_v, ".png"), plot = g.19n, device = "png")
-  write.csv (patent_size.cnt, file = "out\\patent_size.cnt.csv")
-  
+    write.csv (patent_size.cnt, file = "out\\patent_size.cnt.csv")
+    firm_size_plot
   
 }
 
-# Create figure 4 in gov interest data brief
-figure10 <- function(){
-  # 27. Five year citation analysis 
+# Avg. Number of Citations from Subsequent Patents Received by Gov Interest Patents by Assignee Sector - Last Five Years
+# Figure 10 in gov interest data brief
+five_year_citation_analysis <- function(){
+  
+  # Five year citation analysis 
   # merge in.patent_level gi only with each of the five year counts; left join on all.  Must remove 2014 and later patents
   in.cite_1_sum <- in.cite_1 %>%  
     group_by(cited_patent_id) %>% 
@@ -501,7 +508,7 @@ figure10 <- function(){
   cit_sector.count.melt <- melt(cit_sector.count.clnd, id="thes_types", measure.vars = c(3:7))
   cit_sector.count.melt.clnd <- cit_sector.count.melt %>% filter(thes_types != "Other")
   
-  g.27 <- ggplot(cit_sector.count.melt.clnd, aes(x=variable,y=value,fill=thes_types)) +
+  citation_plot <- ggplot(cit_sector.count.melt.clnd, aes(x=variable,y=value,fill=thes_types)) +
     geom_bar(stat="identity", position = "dodge") + 
     labs(y= "Average Accrued Weighted Citations", x="Year After Publication") +
     scale_y_continuous(label=comma) +
@@ -513,17 +520,17 @@ figure10 <- function(){
           legend.title=element_blank()
     )
   
-  g.27
-  ggsave (filename = paste0("data_viz\\fiveYearCitationImpact_", script_v, ".png"), plot = g.27, device = "png")
-  # export select datasets
+    # export select datasets
   write.csv (cit_sector.count.melt.clnd, file = "out\\citations_accrued_years_1_thru_5.csv")
   write.csv (cit_sector.count.melt.clnd, file = "out\\cit_sector.count.melt.clnd.csv")
   
+  citation_plot
+  
 }
 
-# Create figure 10 in gov interest data brief
-sector_agency_field_dt <- function(){
-  # 28. data table alinging sector, agency, and field, by year
+
+sector_agency_field_datatable <- function(){
+  # data table alinging sector, agency, and field, by year
   sector_agency_field_dt() 
   sector_org_field.by_year.merged <- merge(sector_org.merged.ratio.clnd, in.patent_level, by="patent_id")
   colnames (sector_org_field.by_year.merged)

@@ -24,7 +24,7 @@ script_v <- "3.0"
 #########################################################################################################
 
 # connect to the aws mySQL server
-source("G:\\config.r")
+source("G:/PatentsView/config.r")
 my_db=src_mysql(dbname=dbname,host=host,port=port,user=user,password=password)
 ##################################################f#######################################################
 
@@ -40,17 +40,6 @@ in.cite_2 <- as.data.frame(tbl(my_db, "temp_5yr_citations_by_cite_yr2"))
 in.cite_3 <- as.data.frame(tbl(my_db, "temp_5yr_citations_by_cite_yr3"))
 in.cite_4 <- as.data.frame(tbl(my_db, "temp_5yr_citations_by_cite_yr4"))
 in.cite_5 <- as.data.frame(tbl(my_db, "temp_5yr_citations_yr5")) 
-
-#read from db
-in.patent_level <- as.data.frame(tbl(my_db, "temp_patent_level_gi_v3"))
-in.gov_level <- as.data.frame(tbl(my_db, "temp_gi_level_gi_v3"))
-in.all <- as.data.frame(tbl(my_db, "temp_patent_level_all_v3"))
-in.assignees.all <- as.data.frame(tbl(my_db, "all_assignees"))
-in.cite_1 <- as.data.frame(tbl(my_db, "temp_5yr_citations_by_cite_yr1_v3"))
-in.cite_2 <- as.data.frame(tbl(my_db, "temp_5yr_citations_by_cite_yr2_v3"))
-in.cite_3 <- as.data.frame(tbl(my_db, "temp_5yr_citations_by_cite_yr3_v3"))
-in.cite_4 <- as.data.frame(tbl(my_db, "temp_5yr_citations_by_cite_yr4_v3"))
-in.cite_5 <- as.data.frame(tbl(my_db, "temp_5yr_citations_by_cite_yr5_v3")) 
 
 # if you used R to generate table, change the read method of following tables to read from local
 #in.patent_level <- read.csv("data_to_read\\temp_patent_level_gi.csv", header = TRUE, stringsAsFactors = FALSE)
@@ -70,7 +59,12 @@ in.fund <- read.csv("data_to_read\\Agencies.csv", header = TRUE, stringsAsFactor
 in.size <- read.csv("data_to_read\\government_interest_patents_1980-2018_returned.csv", header = TRUE, stringsAsFactors = FALSE)
 #########################################################################################################
 
-# if you look like at these government interest patents, there are some full text fields which have organizations in there; not fixing here
+
+#read from db
+in.patent_level <- as.data.frame(tbl(my_db, "temp_patent_level_gi_v3"))
+in.gov_level <- as.data.frame(tbl(my_db, "temp_gi_level_gi_v3"))
+
+# these government interest patents have some full text fields that contain organizations; not fixing here
 # process patent level data
 in.patent_level <- in.patent_level %>% filter(year != "NULL" & year >= 1980 & year <= 2017) # filter on years 
 patents.keep_ids <- in.patent_level$patent_id                    
@@ -78,28 +72,40 @@ write.csv (patents.keep_ids, file="out\\patents.keep_ids.csv")
 
 # filter on gov_level ids to get the right data 
 in.gov_level <- in.gov_level %>% filter(patent_id %in% patents.keep_ids)
+
 # merge data two main data files
 in.patent_level.merged <- merge(in.patent_level, in.gov_level, by="patent_id")
 write.csv (in.patent_level.merged, file="out\\out.patent_level.merged.csv")
 
 
-# Figure 2 Code
-figure2()
+#########################################################################################################
+# Plots
 
-#
-figure3()
-#
-figure1()
+p.top6_techFields <- gi_patents_in_top6_techFields(in.patent_level) 
+ggsave (filename = paste0("data_viz\\longWipoFields_v", script_v, ".png"), plot = top6_plot, device = "png")
 
-#
-figure7()
 
-#
-figureA_sankey()
 
-#
+p.share_gi_total_patents <- share_of_gi_patents_from_total(in.all, in.patent_level)
+ggsave (filename = paste0("data_viz\\longWipoFieldsPercent_v", script_v, ".png"), plot = 
+          p.share_gi_total_patents, device = "png")
 
-# 18. merge sector type for assignees and create dodged bar chart
+
+p.growth_gi_all_rd <- growth_gi_allPatents_rdFund(in.fund, in.all)
+ggsave (filename = paste0("data_viz\\indexed_", script_v, ".png"), plot = g.12, device = "png")
+
+
+p.mean_num_patents <- mean_num_inv_gi_patents(in.patent_level, in.all)
+ggsave (filename = paste0("data_viz\\longInventor_v", script_v, ".png"), plot = mean_num_inv_plot, device = "png")
+
+
+p.patent_flow <- top_gi_patent_flow(in.assignees, in.patent_level.merged)
+orca(patent_flow_plot, file = paste0("data_viz\\Sankey_", script_v, ".png"))
+htmlwidgets::saveWidget(p.sk, file = paste0("F:\\Govt_Int\\Final_CSVS\\out\\assignees\\Sankey org name_", script_v, "_", ".html"))
+
+
+
+# merge sector type for assignees and create dodged bar chart
 in.sector$organization <- trimws(in.sector$organization)
 sector_org.merged <- in.patent_level.merged %>% 
   select(patent_id, level_one) %>% 
@@ -126,10 +132,15 @@ level_one.clnd <- in.gov_level %>%
   mutate(weight = 1/n())
 
 
-figure4()
+p.gi_patents_fund <- gi_patents_funding_agencies()
+ggsave (filename = paste0("data_viz\\funders-assignees.dodged_", script_v, ".png"), plot = funding_agencies_plot, device = "png")
 
-firmsize() 
-figure10() 
+
+p.firm_size <- firmsize() 
+ggsave (filename = paste0("data_viz\\firmSize_", script_v, ".png"), plot = g.19n, device = "png")
+
+p.citation <- five_year_citation_analysis()
+ggsave (filename = paste0("data_viz\\fiveYearCitationImpact_", script_v, ".png"), plot = citation_plot, device = "png")
 
 # check sectors before and after my improvements
 in.sector.archive %>% group_by(thes_types) %>% summarise(count = length(patent_id))
