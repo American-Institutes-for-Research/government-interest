@@ -9,7 +9,7 @@ Step 1:
 		   ** Note: Notice that some of the queries arequite slow due to table size.
 
 	For R users:
-		a. To gather data, you will be able to download the most updated data from http://www.patentsview.org/download/ and save it to folder 'data_to_read'. 
+		a. To gather data, you will be able to download the most updated data from http://www.patentsview.org/download/ and save it to folder 'data_to_read' in '2_Data_Viz_Generate' . 
 		   These data include:
 			1. uspatentcitation
 			2. patent
@@ -49,9 +49,9 @@ Step 2:
 		c. Agencies.csv [from Archive]
 
 Step 3:
-	** NOTE: In this step, if you generated tables useing R in Step 1, then make sure you change the way you read in table from local file in the following three R scripts.
+	** NOTE: In this step, if you generated tables using R in Step 1, then make sure you change the way you read in table from local file in the following three R scripts.
 
-	Go to folder '3_Data_Viz_Generate' to generate data viz
+	Go to folder '2_Data_Viz_Generate' to generate data visualizations
 	
 	Run through 1.govIntBrief_v3.R to generate data visualizations and tables for analysis. This script will generate two folders:
 		(1) Folder 'data_viz': a folder to store all of the viz that will be generated from R script
