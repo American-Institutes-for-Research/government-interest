@@ -1,23 +1,11 @@
-library (ggplot2)
-library(dplyr)
-library(scales)
 
-
-setwd("F:\\Govt_Int\\2018_Update\\2018_Update_gov_int") 
+source("requirements.R")
 script_v <- "3.0"
 
-# set color scheme
-cyan <- rgb (0, 123, 188,	maxColorValue = 255)
-darkRed <- rgb (208, 32, 47, maxColorValue = 255)
-darkBlue <- rgb (0, 66, 118	, maxColorValue=255)
-darkGreen <- rgb (91, 140, 41, maxColorValue=255)
-darkPurple <- rgb (135, 30, 110, maxColorValue=255)
-darkGrey <- rgb (51, 54, 58, maxColorValue=255)	
-lightGrey <- rgb (152, 152, 152, maxColorValue=255)
 #########################################################################################################
 
 # connect to the aws mySQL server
-source("G:\\ConfigFiles\\configr.r")
+source("config.r")
 my_db=src_mysql(dbname=dbname,host=host,port=port,user=user,password=password)
 #########################################################################################################
 
