@@ -9,16 +9,16 @@ source("config.r")
 my_db=src_mysql(dbname=dbname,host=host,port=port,user=user,password=password)
 #########################################################################################################
 # load patent data
-in.patent_level <- as.data.frame(tbl(my_db, "temp_patent_level_gi"))
+in.patent_level <- as.data.frame(tbl(my_db, "temp_patent_level_gi_v3"))
 in.patent_level <- in.patent_level %>% filter(year != "NULL")
 in.patent_level$year <- as.numeric(as.character(in.patent_level$year))
 in.patent_level$patent_id <- as.character(in.patent_level$patent_id)
 
 # load assignee level data
 in.assignee_level <- read.csv("data_to_read\\assignee_type.csv", header = TRUE, stringsAsFactors = FALSE)
-in.assignee_level <- in.assignee_level %>% select(patent_id, assignee_type, organization)
+in.assignee_level <- in.assignee_level %>% select(patent_id, type, organization)
 in.assignee_level_types <- read.csv("data_to_read\\assignees_lookedup_types.csv", header = TRUE, stringsAsFactors = FALSE)
-in.assignee_level_types <- in.assignee_level_types %>% select(patent_id, assignee_type, organization, thes_types)
+in.assignee_level_types <- in.assignee_level_types %>% select(patent_id, type, organization, thes_types)
 
 
 assignees_years_types <- in.assignee_level_types %>% 
@@ -55,7 +55,7 @@ for_graph_types <- grouped_assignees_types %>%
 
 
 #make graph with looked up types **
-graph2 <- ggplot(for_graph_types, aes(x=year,y=PercentageofAssignees,group=thes_types,linetype=thes_types, colour=thes_types)) +
+looked_up_types <- ggplot(for_graph_types, aes(x=year,y=PercentageofAssignees,group=thes_types,linetype=thes_types, colour=thes_types)) +
   geom_line(size=1.5) + labs(y= "Percentage of Patents", x="Year") +
   scale_x_continuous(breaks=c(1980,1985,1990,1995,2000,2005,2010,2015)) +
   scale_colour_manual(values=c(darkPurple, cyan, darkGreen, darkGrey)) +
@@ -68,11 +68,13 @@ graph2 <- ggplot(for_graph_types, aes(x=year,y=PercentageofAssignees,group=thes_
         legend.key = element_blank(),
         legend.key.width = unit(3, 'lines'),
         legend.title=element_blank(),
-        text=element_text(size=16,  family="Cambria")
+        text=element_text(size=16)
   ) 
 
-graph2
-ggsave (paste0("out\\looked_up_gi_patent_assignees_over_time", script_v, ".png"), device = "png")
+looked_up_types
+
+
+ggsave(paste0("out\\looked_up_gi_patent_assignees_over_time", script_v, ".pdf"), plot=looked_up_types)
 write.csv(for_graph_types, "out\\sectors_over_time.csv")
 
 

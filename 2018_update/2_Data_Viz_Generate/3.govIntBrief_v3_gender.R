@@ -10,14 +10,14 @@ my_db=src_mysql(dbname=dbname,host=host,port=port,user=user,password=password)
 #########################################################################################################
 
 #read in helper data
-in.patent_level <- as.data.frame(tbl(my_db, "temp_patent_level_gi"))
+in.patent_level <- as.data.frame(tbl(my_db, "temp_patent_level_gi_v3"))
 
 temp <- in.patent_level %>% 
           filter(year != "NULL" &  year >= 1980 & year <= 2018) 
           
 #load inventor gender
-in.inventor_has_fem <- as.data.frame(tbl(my_db, "temp_gi_has_female_inv"))
-in.gov_level <- as.data.frame(tbl(my_db, "temp_gi_level_gi"))
+in.inventor_has_fem <- as.data.frame(tbl(my_db, "temp_gi_has_female_inv_v3"))
+in.gov_level <- as.data.frame(tbl(my_db, "temp_gi_level_gi_v3"))
 
 # dont need to run if the length of set.diff is 0
 #set.diff <- setdiff(sort(in.patent_level$patent_id), unique(sort(in.gov_level$patent_id)))
@@ -49,7 +49,7 @@ for_graph <- grouped_gi_inventor_has_fem %>%
 for_graph$has_fem_inv <- as.character(for_graph$has_fem_inv)
 
 
-graph1 <- ggplot(for_graph) +
+gi_teams_female_inv <- ggplot(for_graph) +
   geom_line(aes(x=year,y=PercentageofPatents,color=has_fem_inv,linetype=has_fem_inv), size = 1.5) +
   ylab(label="Percentage of Patents") +  xlab("Year") +
   scale_colour_manual(values=c(cyan, darkPurple, darkGreen), labels=c("All Male Inventors", "At Least One Woman",  "All Unknown")) +
@@ -65,8 +65,8 @@ graph1 <- ggplot(for_graph) +
         legend.title=element_blank(),
         text=element_text(size=16,  family="Cambria")
   )
-graph1
-ggsave (paste0("data_viz\\gi_teams_with_female_inventors_over_time.png"), device = "png")
+gi_teams_female_inv 
+ggsave(paste0("data_viz\\gi_teams_with_female_inventors_over_time", script_v, ".pdf"), plot=gi_teams_female_inv)
 write.csv (for_graph, file="out\\teams_with_at_least_one_woman.csv")
 
 ##################################################
@@ -75,7 +75,7 @@ write.csv (for_graph, file="out\\teams_with_at_least_one_woman.csv")
 # average women's share of the inventor team (mean proportion of the team that is female for each team size) 
 # and size the markers based on the number of patents. Make sense?
 
-in.gender_wipo <- as.data.frame(tbl(my_db, "temp_gi_inventor_gender"))
+in.gender_wipo <- as.data.frame(tbl(my_db, "temp_gi_inventor_gender_v3"))
 in.gender_wipo.sub <- in.gender_wipo %>% 
                         filter(year >= 1980 & year <= 2018) %>% 
                         select(patent_id, num_inventors, dumale) %>%  # patent_id, team_size, dumale
@@ -96,7 +96,7 @@ grouped_by.num_inventors <- women_in_teams %>%
 for_graph.num_inventors <- grouped_by.num_inventors %>% 
                               filter(num_inventors <= 15)
 
-graph3 <- ggplot(data=for_graph.num_inventors, aes(x=num_inventors, y=meanPercWomenOnTeam)) +
+perc_female_inv <- ggplot(data=for_graph.num_inventors, aes(x=num_inventors, y=meanPercWomenOnTeam)) +
   geom_point(aes(colour = numPatents, size=numPatents)) + 
   labs(y= "Mean Percentage of Women\non Teams with At Least One Woman", x="Inventor Team Size", colour="Number of\nPatents", size="Number of\nPatents") +
   theme_set(theme_gray(base_size = 16)) + 
@@ -112,10 +112,18 @@ graph3 <- ggplot(data=for_graph.num_inventors, aes(x=num_inventors, y=meanPercWo
     legend.key = element_blank(),
     legend.title.align = 0.5,
     legend.key.width = unit(3, 'lines'),
-    text=element_text(size=16,  family="Cambria"),
+    text=element_text(size=12),
     legend.box.background = element_rect(colour = lightGrey), 
     legend.background = element_blank()
   ) 
-graph3
-ggsave (paste0("data_viz\\percent_with_female_inventor_by_team_size.png"), device = "png")
+perc_female_inv
+# pdf
+ggsave (paste0("data_viz\\percent_with_female_inventor_by_team_size", script_v,".pdf"), plot = perc_female_inv)
+
+# png 
+ggsave (paste0("data_viz\\percent_with_female_inventor_by_team_size", script_v,".png"), plot = perc_female_inv)
+
+
+
 write.csv(for_graph.num_inventors, "out\\mean_percent_of_teams_with_a_female_inventor.csv")
+

@@ -21,8 +21,14 @@ pkg_list <- c("trend", "plyr", "scales", "MASS", "reshape", "tools", "plotly", "
               "data.table", "gridExtra", "psych", "dplyr", "dbplyr", "extrafont")
 lapply(pkg_list, install_pkgs)
 # add ggplot2 after setting device
-loadfonts(device = "win")
 library(ggplot2)
+
+# Note: These font import steps from the extrafont database only need to be run once
+if(nrow(fonttable()) == 0){
+  print("Importing fonts for the first time - this may take a few minutes")
+  font_import()
+  loadfonts(device = "pdf")
+}
 
 # set color scheme
 cyan <- rgb (0, 123, 188,	maxColorValue = 255)
